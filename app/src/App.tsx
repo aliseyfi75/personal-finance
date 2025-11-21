@@ -70,8 +70,11 @@ const MainApp: React.FC = () => {
   const handleSignIn = async () => {
     try {
       await signInGoogle();
+      const authInstance = getAuthInstance();
+      setGoogleUser(authInstance.isSignedIn.get());
     } catch (e) {
       console.error("Sign in failed", e);
+      alert("Sign in failed. Please check your credentials and try again.");
     }
   };
 
