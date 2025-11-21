@@ -9,13 +9,21 @@ This project is configured to automatically deploy to GitHub Pages using GitHub 
 ### Setting up the Repository
 
 1. **Push to Main**: Ensure your code is pushed to the `main` (or `master`) branch.
-2. **GitHub Actions**: The workflow defined in `.github/workflows/deploy.yml` will automatically trigger. It builds the application and pushes the artifacts to a `gh-pages` branch.
+2. **Wait for Build**: Click on the **Actions** tab in your repository. You should see a workflow named "Deploy to GitHub Pages" running. **Wait for this to complete successfully** (green checkmark).
+   - *This step creates the `gh-pages` branch. You cannot proceed until this finishes.*
 3. **Configure GitHub Pages**:
    - Go to your repository's **Settings**.
    - Click on **Pages** in the left sidebar.
    - Under **Build and deployment** > **Source**, select **Deploy from a branch**.
-   - Under **Branch**, select `gh-pages` and `/ (root)`.
+   - Under **Branch**, select `gh-pages` (NOT `main`) and `/ (root)`.
    - Click **Save**.
+
+### ⚠️ Troubleshooting: README appears as the website?
+If your deployed site looks like this README file instead of the application:
+1. You likely selected the `main` branch in the GitHub Pages settings.
+2. Go back to **Settings > Pages**.
+3. Ensure the branch is set to **`gh-pages`**.
+   - *If `gh-pages` is not in the dropdown, ensure the GitHub Action (Step 2) has finished successfully.*
 
 ### Important: Base Path Configuration
 The application is configured with a base path of `/personal-finance/` in `app/vite.config.ts`.
