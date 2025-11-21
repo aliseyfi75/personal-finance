@@ -63,8 +63,11 @@ export const parseFinancialData = (rows: any[]): FinancialRecord[] => {
   for (let i = 0; i < row1.length; i++) {
     if (row1[i]) currentCategory = row1[i];
     if (row2[i]) currentSubCategory = row2[i];
-    // If row2[i] is empty, it inherits from previous or it's just N/A.
-    // In the user description: "Income" -> "Basic", "Extra". These are in Row 2.
+
+    // In case of merged cells, empty strings in row1/row2 mean "continue previous value"
+    // BUT ONLY if it's not the start of a new block.
+    // We assume if row1[i] is empty, it continues currentCategory.
+    // If row2[i] is empty, it continues currentSubCategory.
     // "Investment" -> "RRSP" -> "Contribution", "Current Value".
     // So for Investment: Row 1 is Investment. Row 2 is RRSP. Row 3 is Contribution.
     // Next col: Row 1 is "" (merged), Row 2 is "" (merged), Row 3 is "Current Value".
@@ -113,6 +116,8 @@ export const parseFinancialData = (rows: any[]): FinancialRecord[] => {
       if (index === 0) return; // Date
       const map = colMap[index];
       if (!map) return;
+
+      if (!cellValue) return; // Skip empty cells
 
       const val = parseFloat(cellValue?.replace(/[\$,]/g, '') || '0');
 
