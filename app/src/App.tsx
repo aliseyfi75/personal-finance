@@ -4,7 +4,7 @@ import { SettingsForm } from './components/SettingsForm';
 import { Dashboard } from './components/Dashboard';
 import { Simulation } from './components/Simulation';
 import { GeminiChat } from './components/GeminiChat';
-import { initGoogleClient, signInGoogle, isSignedIn, signOutGoogle } from './services/GoogleAuth';
+import { initGoogleClient, signInGoogle, signOutGoogle, getAuthInstance } from './services/GoogleAuth';
 import { fetchSpreadsheetData, parsePortfolioData, parseFinancialData, aggregateMonthlyData } from './services/SheetsService';
 import type { PortfolioItem, FinancialRecord } from './types';
 import { LogOut, RefreshCw, LayoutDashboard, TrendingUp, MessageSquare } from 'lucide-react';
@@ -20,7 +20,11 @@ const MainApp: React.FC = () => {
   useEffect(() => {
     if (isConfigured && settings?.googleClientId) {
       initGoogleClient(settings.googleClientId).then(() => {
-        setGoogleUser(!!isSignedIn());
+        const authInstance = getAuthInstance();
+        setGoogleUser(authInstance.isSignedIn.get());
+        authInstance.isSignedIn.listen((isSignedIn: boolean) => {
+          setGoogleUser(isSignedIn);
+        });
       }).catch(err => {
         console.error("GAPI Init Error", err);
         alert("Failed to initialize Google API. Check Client ID.");
@@ -28,24 +32,7 @@ const MainApp: React.FC = () => {
     }
   }, [isConfigured, settings]);
 
-  const handleSignIn = async () => {
-    try {
-      await signInGoogle();
-      setGoogleUser(true);
-      loadData();
-    } catch (e) {
-      console.error("Sign in failed", e);
-    }
-  };
-
-  const handleSignOut = async () => {
-    await signOutGoogle();
-    setGoogleUser(false);
-    setPortfolio([]);
-    setFinancials([]);
-  };
-
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     if (!settings) return;
     setLoading(true);
     try {
@@ -72,6 +59,27 @@ const MainApp: React.FC = () => {
         alert("Failed to load data from sheets. Ensure you have permission and the IDs are correct.");
     }
     setLoading(false);
+  }, [settings]);
+
+  useEffect(() => {
+    if (googleUser) {
+      loadData();
+    }
+  }, [googleUser, loadData]);
+
+  const handleSignIn = async () => {
+    try {
+      await signInGoogle();
+    } catch (e) {
+      console.error("Sign in failed", e);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOutGoogle();
+    setGoogleUser(false);
+    setPortfolio([]);
+    setFinancials([]);
   };
 
   if (!isConfigured) {

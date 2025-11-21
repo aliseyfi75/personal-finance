@@ -30,3 +30,7 @@ export const signOutGoogle = () => {
 export const isSignedIn = () => {
   return gapi.auth2.getAuthInstance()?.isSignedIn.get();
 };
+
+export const getAuthInstance = () => {
+  return gapi.auth2.getAuthInstance();
+};
